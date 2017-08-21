@@ -23,7 +23,7 @@ import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 
 public class ItemProspector extends Item {
-  public int COOLDOWN = 12;
+  public int cooldown;
   public int range;
   public boolean isBlacklist;
   public String[] blocklist;
@@ -47,16 +47,10 @@ public class ItemProspector extends Item {
     for (int i = 0; i < range; i++) {
       current = pos.offset(direction, i);
       at = worldObj.getBlockState(current);
-      if (at == null) {
+      if (at == null || at == Blocks.AIR || at.getBlock() == null) {
         continue;
       }
       blockAt = at.getBlock();
-      if (blockAt == null) {
-        continue;
-      }
-      if (at == Blocks.AIR) {
-        continue;
-      }
       s = new ItemStack(Item.getItemFromBlock(blockAt), 1, blockAt.getMetaFromState(at));
       if (isBlockShowable(s) == false) {
         continue;
@@ -74,12 +68,15 @@ public class ItemProspector extends Item {
         addChatMessage(player, lang("prospector.found") + entry.getKey() + " " + entry.getValue());
       }
     }
-    player.swingArm(hand);
-    damageItem(player, stack);
+    this.onSuccess(player, stack, hand);
     return super.onItemUse(player, worldObj, pos, hand, side, hitX, hitY, hitZ);
   }
-  private void damageItem(EntityPlayer p, ItemStack s) {
+  private void onSuccess(EntityPlayer p, ItemStack s, EnumHand hand) {
     s.damageItem(1, p);
+    p.swingArm(hand);
+    if (this.cooldown > 0) {
+      p.getCooldownTracker().setCooldown(s.getItem(), this.cooldown);
+    }
   }
   private static String lang(String string) {
     //if we use the clientside one, it literally does not work & crashes on serverside run
@@ -118,11 +115,11 @@ public class ItemProspector extends Item {
     return item.getRegistryName().getResourceDomain() + ":" + item.getRegistryName().getResourcePath();
   }
   public void syncConfig(Configuration c, String[] deflist) {
-    String category = this.type.name().toLowerCase();
-    this.range = c.getInt("range", category, 1, 32, 256, "Search range");
-    this.COOLDOWN = c.getInt("cooldown", category, 1, 32, 256, "Time delay per use");
-    this.setMaxDamage(c.getInt("durability", category, 1, 32, 256, "Durability; number of uses"));
-    this.isBlacklist = c.getBoolean("IsBlacklist", category, false, "True means this is a blacklist, ignore whats listed. False means its a whitelist: only print whats listed.");
+    String category = "prospector_" + this.type.name().toLowerCase();
+    this.range = c.getInt("range", category, 32, 1, 256, "Search range");
+    this.cooldown = c.getInt("cooldown", category, 10, 0, 256, "Time delay per use (ticks); zero to disable");
+    this.setMaxDamage(c.getInt("durability", category, 200, 1, 65536, "Durability: number of uses"));
+    this.isBlacklist = c.getBoolean("IsBlacklist", category, false, "True means this is a blacklist: ignore whats listed. False means its a whitelist: only print whats listed.");
     this.blocklist = c.getStringList("ProspectorBlockList", category, deflist, "List of blocks that the Prospector knows about.");
   }
   public IRecipe addRecipe(ResourceLocation rl) {
@@ -134,9 +131,9 @@ public class ItemProspector extends Item {
             " sg",
             " bs",
             "b  ",
-            'b', Items.STICK,
-            's', "gemDiamond",
-            'g', "blockGlassLightBlue");
+            'b', "cobblestone",
+            's', "stickWood",
+            'g', "blockGlassColorless");
       break;
       case LOW:
         recipe = new ShapedOreRecipe(rl,
@@ -144,9 +141,9 @@ public class ItemProspector extends Item {
             " sg",
             " bs",
             "b  ",
-            'b', Prospectors.lowest,
-            's', "gemDiamond",
-            'g', "blockGlassLightBlue");
+            'b', "logWood",
+            's', Items.COAL,
+            'g', Prospectors.lowest);
       break;
       case MED:
         recipe = new ShapedOreRecipe(rl,
@@ -154,9 +151,9 @@ public class ItemProspector extends Item {
             " sg",
             " bs",
             "b  ",
-            'b', Prospectors.low,
-            's', "gemDiamond",
-            'g', "blockGlassLightBlue");
+            'b', "gemLapis",
+            's', "dustRedstone",
+            'g', Prospectors.low);
       break;
       case HIGH:
         recipe = new ShapedOreRecipe(rl,
@@ -164,9 +161,9 @@ public class ItemProspector extends Item {
             " sg",
             " bs",
             "b  ",
-            'b', Prospectors.med,
-            's', "gemDiamond",
-            'g', "blockGlassLightBlue");
+            'b', "gemEmerald",
+            's', "blockGlassPurple",
+            'g', Prospectors.med);
       break;
       case BEST:
         recipe = new ShapedOreRecipe(rl,
@@ -174,9 +171,9 @@ public class ItemProspector extends Item {
             " sg",
             " bs",
             "b  ",
-            'b', Prospectors.best,
+            'b', Items.BLAZE_ROD,
             's', "gemDiamond",
-            'g', "blockGlassLightBlue");
+            'g', Prospectors.high);
       break;
     }
     recipe.setRegistryName(rl);

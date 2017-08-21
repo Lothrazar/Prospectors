@@ -54,11 +54,11 @@ public class Prospectors {
     low.syncConfig(c,
         new String[] { "minecraft:iron_ore", "minecraft:coal_ore" });
     med.syncConfig(c,
-        new String[] { "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore" });
+        new String[] { "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore" });
     high.syncConfig(c,
-        new String[] { "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore" });
+        new String[] { "minecraft:quartz_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore/0", "minecraft:redstone_ore/1" });
     best.syncConfig(c,
-        new String[] { "minecraft:emerald_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore" });
+        new String[] { "minecraft:quartz_ore", "minecraft:diamond_ore", "minecraft:emerald_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore/0", "minecraft:redstone_ore/1" });
     c.save();
     register(lowest, "prospector_" + lowest.type.name().toLowerCase());
     register(low, "prospector_" + low.type.name().toLowerCase());
