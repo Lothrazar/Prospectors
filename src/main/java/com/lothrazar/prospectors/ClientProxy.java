@@ -1,3 +1,2 @@
 package com.lothrazar.prospectors;
-
-public class ClientProxy extends CommonProxy{}
+public class ClientProxy extends CommonProxy {}

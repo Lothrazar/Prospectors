@@ -1,12 +1,10 @@
 package com.lothrazar.prospectors;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
@@ -88,7 +86,6 @@ public class Prospectors {
   public void onRegisterRecipe(RegistryEvent.Register<IRecipe> event) {
     event.getRegistry().registerAll(recipes.toArray(new IRecipe[0]));
   }
-
   @SideOnly(Side.CLIENT)
   @SubscribeEvent
   public void registerModels(ModelRegistryEvent event) {
@@ -99,9 +96,9 @@ public class Prospectors {
     // http://www.minecraftforge.net/forum/index.php?topic=27684.0
     // http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/modification-development/2272349-lessons-from-my-first-mc-1-8-mod
     //    ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
-String name;
+    String name;
     for (Item item : items) {
-      name = MODID+":" + item.getUnlocalizedName().replaceAll("item.", "");
+      name = MODID + ":" + item.getUnlocalizedName().replaceAll("item.", "");
       ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(name, "inventory"));
     }
   }
