@@ -13,6 +13,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -22,7 +23,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-@Mod(modid = Prospectors.MODID)
+@Mod(modid = Prospectors.MODID, updateJSON = "https://raw.githubusercontent.com/PrinceOfAmber/Prospectors/master/update.json", guiFactory = "com.lothrazar." + Prospectors.MODID + ".IngameConfigFactory")
 public class Prospectors {
   @Instance(value = Prospectors.MODID)
   public static Prospectors instance;
@@ -45,21 +46,12 @@ public class Prospectors {
   public final static ItemProspector med = new ItemProspector(Types.MED);
   public final static ItemProspector high = new ItemProspector(Types.HIGH);
   public final static ItemProspector best = new ItemProspector(Types.BEST);
+  static Configuration config;
   @EventHandler
   public void onPreInit(FMLPreInitializationEvent event) {
-    Configuration c = new Configuration(event.getSuggestedConfigurationFile());
-    c.load();
-    lowest.syncConfig(c,
-        new String[] { "minecraft:coal_ore", "minecraft:gravel", "minecraft:sand" });
-    low.syncConfig(c,
-        new String[] { "minecraft:iron_ore", "minecraft:coal_ore" });
-    med.syncConfig(c,
-        new String[] { "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore" });
-    high.syncConfig(c,
-        new String[] { "minecraft:quartz_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore/0", "minecraft:redstone_ore/1" });
-    best.syncConfig(c,
-        new String[] { "minecraft:quartz_ore", "minecraft:diamond_ore", "minecraft:emerald_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore/0", "minecraft:redstone_ore/1" });
-    c.save();
+    config = new Configuration(event.getSuggestedConfigurationFile());
+    config.load();
+    syncAllConfig();
     register(lowest, "prospector_" + lowest.type.name().toLowerCase());
     register(low, "prospector_" + low.type.name().toLowerCase());
     register(med, "prospector_" + med.type.name().toLowerCase());
@@ -101,5 +93,25 @@ public class Prospectors {
       name = MODID + ":" + item.getUnlocalizedName().replaceAll("item.", "");
       ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(name, "inventory"));
     }
+  }
+  @SubscribeEvent
+  public void onConfigChanged(OnConfigChangedEvent event) {
+    if (event.getModID().equals(MODID)) {
+      syncAllConfig();
+    }
+  }
+  private void syncAllConfig() {
+    lowest.syncConfig(config,
+        new String[] { "minecraft:coal_ore", "minecraft:gravel", "minecraft:sand" });
+    low.syncConfig(config,
+        new String[] { "minecraft:iron_ore", "minecraft:coal_ore" });
+    med.syncConfig(config,
+        new String[] { "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore" });
+    high.syncConfig(config,
+        new String[] { "minecraft:quartz_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore/0", "minecraft:redstone_ore/1" });
+    best.syncConfig(config,
+        new String[] { "minecraft:quartz_ore", "minecraft:diamond_ore", "minecraft:emerald_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore/0", "minecraft:redstone_ore/1" });
+    if (config.hasChanged())
+      config.save();
   }
 }

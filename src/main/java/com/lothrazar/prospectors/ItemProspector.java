@@ -133,7 +133,7 @@ public class ItemProspector extends Item {
             "b  ",
             'b', "cobblestone",
             's', "stickWood",
-            'g', "blockGlassColorless");
+            'g', "logWood");
       break;
       case LOW:
         recipe = new ShapedOreRecipe(rl,
@@ -143,7 +143,7 @@ public class ItemProspector extends Item {
             "b  ",
             'b', "logWood",
             's', Items.COAL,
-            'g', Prospectors.lowest);
+            'g', "blockGlassColorless");
       break;
       case MED:
         recipe = new ShapedOreRecipe(rl,
@@ -153,7 +153,7 @@ public class ItemProspector extends Item {
             "b  ",
             'b', "gemLapis",
             's', "dustRedstone",
-            'g', Prospectors.low);
+            'g', "blockGlassColorless");
       break;
       case HIGH:
         recipe = new ShapedOreRecipe(rl,
@@ -162,8 +162,8 @@ public class ItemProspector extends Item {
             " bs",
             "b  ",
             'b', "gemEmerald",
-            's', "blockGlassPurple",
-            'g', Prospectors.med);
+            's', "dustRedstone",
+            'g',  "blockGlassColorless");
       break;
       case BEST:
         recipe = new ShapedOreRecipe(rl,
@@ -173,7 +173,7 @@ public class ItemProspector extends Item {
             "b  ",
             'b', Items.BLAZE_ROD,
             's', "gemDiamond",
-            'g', Prospectors.high);
+            'g',  "blockGlassColorless");
       break;
     }
     recipe.setRegistryName(rl);
