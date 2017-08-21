@@ -57,7 +57,7 @@ public class ItemProspector extends Item {
       if (at == Blocks.AIR) {
         continue;
       }
-      //          name = blockAt.getUnlocalizedName();
+ 
       s = new ItemStack(Item.getItemFromBlock(blockAt), 1, blockAt.getMetaFromState(at));
       if (isBlockShowable(s) == false) {
         continue;
