@@ -35,15 +35,15 @@ public class Prospectors {
   public enum Types {
     LOWEST, LOW, MED, HIGH, BEST;
   }
+  public final static ItemProspector lowest = new ItemProspector(Types.LOWEST);
+  public final static   ItemProspector low = new ItemProspector(Types.LOW);
+  public final static   ItemProspector med = new ItemProspector(Types.MED);
+  public final static   ItemProspector high = new ItemProspector(Types.HIGH);
+  public final static   ItemProspector best = new ItemProspector(Types.BEST);
   @EventHandler
   public void onPreInit(FMLPreInitializationEvent event) {
     Configuration c = new Configuration(event.getSuggestedConfigurationFile());
     c.load();
-    ItemProspector lowest = new ItemProspector(Types.LOWEST);
-    ItemProspector low = new ItemProspector(Types.LOW);
-    ItemProspector med = new ItemProspector(Types.MED);
-    ItemProspector high = new ItemProspector(Types.HIGH);
-    ItemProspector best = new ItemProspector(Types.BEST);
     lowest.syncConfig(c,
         new String[] { "minecraft:coal_ore", "minecraft:gravel", "minecraft:sand" });
     low.syncConfig(c,
@@ -58,11 +58,11 @@ public class Prospectors {
     //TODO: CONFIG:
     // DURABILITY: COOLDOWN< RANGE
     MinecraftForge.EVENT_BUS.register(this);
-    register(low, "prospector_" + lowest.type.name().toLowerCase());
+    register(lowest, "prospector_" + lowest.type.name().toLowerCase());
     register(low, "prospector_" + low.type.name().toLowerCase());
-    register(low, "prospector_" + med.type.name().toLowerCase());
-    register(low, "prospector_" + high.type.name().toLowerCase());
-    register(low, "prospector_" + best.type.name().toLowerCase());
+    register(med, "prospector_" + med.type.name().toLowerCase());
+    register(high, "prospector_" + high.type.name().toLowerCase());
+    register(best, "prospector_" + best.type.name().toLowerCase());
   }
   @EventHandler
   public void init(FMLInitializationEvent event) {}
@@ -73,16 +73,8 @@ public class Prospectors {
     item.setRegistryName(rl);
     items.add(item);
    
-    //    IRecipe recipe = new ShapedOreRecipe(rl,
-//        new ItemStack(item),
-//        " sg",
-//        " bs",
-//        "b  ",
-//        'b', new ItemStack(Items.BLAZE_ROD),
-//        's', "gemDiamond",
-//        'g', "blockGlassLightBlue");
-//    recipe.setRegistryName(rl);
-    addRecipe( item.addRecipe(rl));
+ 
+    addRecipe( item.addRecipe(rl ));
   }
   private void addRecipe(IRecipe r) {
     recipes.add(r);

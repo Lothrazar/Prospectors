@@ -5,7 +5,6 @@ import javax.annotation.Nonnull;
 import com.lothrazar.prospectors.Prospectors.Types;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -17,7 +16,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
@@ -81,13 +79,8 @@ public class ItemProspector extends Item {
     damageItem(player, stack);
     return super.onItemUse(player, worldObj, pos, hand, side, hitX, hitY, hitZ);
   }
-  private void damageItem(EntityLivingBase p, ItemStack s) {
-    if (p instanceof EntityPlayer) {
-      damageItem((EntityPlayer) p, s);
-    }
-    else {
-      s.damageItem(1, p);
-    }
+  private void damageItem(EntityPlayer p, ItemStack s) {
+    s.damageItem(1, p);
   }
   private static String lang(String string) {
     //if we use the clientside one, it literally does not work & crashes on serverside run
@@ -136,15 +129,13 @@ public class ItemProspector extends Item {
   public IRecipe addRecipe(ResourceLocation rl) {
     IRecipe recipe = null;
     switch (this.type) {
-      case BEST:
-      break;
-      case HIGH:
+      case LOWEST:
         recipe = new ShapedOreRecipe(rl,
             new ItemStack(this),
             " sg",
             " bs",
             "b  ",
-            'b', new ItemStack(Items.BLAZE_ROD),
+            'b', Items.STICK,
             's', "gemDiamond",
             'g', "blockGlassLightBlue");
       break;
@@ -154,17 +145,7 @@ public class ItemProspector extends Item {
             " sg",
             " bs",
             "b  ",
-            'b', new ItemStack(Items.BLAZE_ROD),
-            's', "gemDiamond",
-            'g', "blockGlassLightBlue");
-      break;
-      case LOWEST:
-        recipe = new ShapedOreRecipe(rl,
-            new ItemStack(this),
-            " sg",
-            " bs",
-            "b  ",
-            'b', new ItemStack(Items.BLAZE_ROD),
+            'b', Prospectors.lowest,
             's', "gemDiamond",
             'g', "blockGlassLightBlue");
       break;
@@ -174,11 +155,29 @@ public class ItemProspector extends Item {
             " sg",
             " bs",
             "b  ",
-            'b', new ItemStack(Items.BLAZE_ROD),
+            'b', Prospectors.low,
             's', "gemDiamond",
             'g', "blockGlassLightBlue");
       break;
-      default:
+      case HIGH:
+        recipe = new ShapedOreRecipe(rl,
+            new ItemStack(this),
+            " sg",
+            " bs",
+            "b  ",
+            'b', Prospectors.med,
+            's', "gemDiamond",
+            'g', "blockGlassLightBlue");
+      break;
+      case BEST:
+        recipe = new ShapedOreRecipe(rl,
+            new ItemStack(this),
+            " sg",
+            " bs",
+            "b  ",
+            'b', Prospectors.best,
+            's', "gemDiamond",
+            'g', "blockGlassLightBlue");
       break;
     }
     recipe.setRegistryName(rl);
