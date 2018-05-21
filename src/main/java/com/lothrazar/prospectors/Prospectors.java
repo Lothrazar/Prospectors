@@ -106,9 +106,9 @@ public class Prospectors {
     med.syncConfig(config,
         new String[] { "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore" });
     high.syncConfig(config,
-        new String[] { "minecraft:quartz_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore/0", "minecraft:redstone_ore/1" });
+        new String[] { "minecraft:quartz_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore", "minecraft:lit_redstone_ore" });
     best.syncConfig(config,
-        new String[] { "minecraft:quartz_ore", "minecraft:diamond_ore", "minecraft:emerald_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore/0", "minecraft:redstone_ore/1" });
+        new String[] { "minecraft:quartz_ore", "minecraft:diamond_ore", "minecraft:emerald_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore", "minecraft:lit_redstone_ore" });
     if (config.hasChanged())
       config.save();
   }
