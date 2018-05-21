@@ -47,7 +47,7 @@ public class ItemProspector extends Item {
     for (int i = 0; i < range; i++) {
       current = pos.offset(direction, i);
       at = worldObj.getBlockState(current);
-      if (at == null || at == Blocks.AIR || at.getBlock() == null) {
+      if (at == Blocks.AIR.getDefaultState()) {
         continue;
       }
       blockAt = at.getBlock();
