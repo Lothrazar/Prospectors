@@ -88,10 +88,8 @@ public class Prospectors {
     // http://www.minecraftforge.net/forum/index.php?topic=27684.0
     // http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/modification-development/2272349-lessons-from-my-first-mc-1-8-mod
     //    ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
-    String name;
     for (Item item : items) {
-      name = MODID + ":" + item.getUnlocalizedName().replaceAll("item.", "");
-      ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(name, "inventory"));
+      ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(item.getRegistryName(), "inventory"));
     }
   }
   @SubscribeEvent
