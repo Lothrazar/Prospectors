@@ -1,8 +1,6 @@
 package com.lothrazar.prospectors;
 import java.util.*;
-import javax.annotation.Nonnull;
 import com.lothrazar.prospectors.Prospectors.Types;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -15,8 +13,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -34,35 +32,33 @@ public class ItemProspector extends Item {
   }
   @Override
   public EnumActionResult onItemUse(EntityPlayer player, World worldObj, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-    ItemStack stack = player.getHeldItem(hand);
-    Map<String, Integer> mapList = new HashMap<String, Integer>();
-    String name;
-    EnumFacing direction = side.getOpposite();
-    BlockPos current;
-    IBlockState state;
-    Block blockAt;
-    ItemStack s;
-    for (int i = 0; i < range; i++) {
-      current = pos.offset(direction, i);
-      state = worldObj.getBlockState(current);
-      if (state == Blocks.AIR.getDefaultState() || !isBlockShowable(state)) {
-        continue;
-      }
-      blockAt = state.getBlock();
-      s = new ItemStack(Item.getItemFromBlock(blockAt), 1, blockAt.getMetaFromState(state));
-      name = s.getDisplayName();
-      int previous = (mapList.containsKey(name)) ? mapList.get(name) : 0;
-      mapList.put(name, previous + 1);
-    }
-    //now send messages
     if (worldObj.isRemote) {
-      if (mapList.size() == 0) {
-        addChatMessage(player, lang("prospector.none") + range);
+      Map<IBlockState, Integer> mapList = new HashMap<>();
+      Map<IBlockState, BlockPos> lastPositions = new HashMap<>();
+      EnumFacing direction = side.getOpposite();
+      for (int i = 0; i < range; i++) {
+        BlockPos offsetPos = pos.offset(direction, i);
+        IBlockState state = worldObj.getBlockState(offsetPos);
+        if (state == Blocks.AIR.getDefaultState() || !isBlockShowable(state)) {
+          continue;
+        }
+        int previous = mapList.getOrDefault(state, 0);
+        mapList.put(state, previous + 1);
+        lastPositions.put(state, offsetPos);
       }
-      for (Map.Entry<String, Integer> entry : mapList.entrySet()) {
-        addChatMessage(player, lang("prospector.found") + entry.getKey() + " " + entry.getValue());
+      //now send messages
+      if (mapList.size() == 0) {
+        addChatMessage(player, "prospector.none", range);
+      }
+      for (Map.Entry<IBlockState, Integer> entry : mapList.entrySet()) {
+        IBlockState state = entry.getKey();
+        BlockPos lastPosition = lastPositions.get(state);
+        ItemStack pickBlock = state.getBlock().getPickBlock(state, null, worldObj, lastPosition, player);
+        ITextComponent textComponent = pickBlock.getTextComponent();
+        addChatMessage(player, "prospector.found", textComponent, entry.getValue());
       }
     }
+    ItemStack stack = player.getHeldItem(hand);
     this.onSuccess(player, stack, hand);
     return super.onItemUse(player, worldObj, pos, hand, side, hitX, hitY, hitZ);
   }
@@ -73,12 +69,8 @@ public class ItemProspector extends Item {
       p.getCooldownTracker().setCooldown(s.getItem(), this.cooldown);
     }
   }
-  private static String lang(String string) {
-    //if we use the clientside one, it literally does not work & crashes on serverside run
-    return I18n.translateToLocal(string);
-  }
-  private static void addChatMessage(EntityPlayer player, String text) {
-    player.sendMessage(new TextComponentTranslation(lang(text)));
+  private static void addChatMessage(EntityPlayer player, String text, Object... args) {
+    player.sendMessage(new TextComponentTranslation(text, args));
   }
   private boolean isBlockShowable(IBlockState state) {
     String simpleName = state.getBlock().getRegistryName().toString();
