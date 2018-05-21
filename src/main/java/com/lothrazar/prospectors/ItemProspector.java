@@ -60,7 +60,7 @@ public class ItemProspector extends Item {
     }
     ItemStack stack = player.getHeldItem(hand);
     this.onSuccess(player, stack, hand);
-    return super.onItemUse(player, worldObj, pos, hand, side, hitX, hitY, hitZ);
+    return EnumActionResult.SUCCESS;
   }
   private void onSuccess(EntityPlayer p, ItemStack s, EnumHand hand) {
     s.damageItem(1, p);
