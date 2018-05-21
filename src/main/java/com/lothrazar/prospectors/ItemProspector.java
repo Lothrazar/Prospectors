@@ -47,16 +47,23 @@ public class ItemProspector extends Item {
         lastPositions.put(state, offsetPos);
       }
       //now send messages
+      ITextComponent message = null;
       if (mapList.size() == 0) {
-        addChatMessage(player, "prospector.none", range);
+        message = new TextComponentTranslation("prospector.none", range);
+      } else {
+        for (Map.Entry<IBlockState, Integer> entry : mapList.entrySet()) {
+          IBlockState state = entry.getKey();
+          BlockPos lastPosition = lastPositions.get(state);
+          ItemStack pickBlock = state.getBlock().getPickBlock(state, null, worldObj, lastPosition, player);
+          ITextComponent blockName = pickBlock.getTextComponent();
+          if (message == null) {
+            message = new TextComponentTranslation("prospector.found", entry.getValue(), blockName);
+          } else {
+            message.appendSibling(new TextComponentTranslation("prospector.found.and", entry.getValue(), blockName));
+          }
+        }
       }
-      for (Map.Entry<IBlockState, Integer> entry : mapList.entrySet()) {
-        IBlockState state = entry.getKey();
-        BlockPos lastPosition = lastPositions.get(state);
-        ItemStack pickBlock = state.getBlock().getPickBlock(state, null, worldObj, lastPosition, player);
-        ITextComponent textComponent = pickBlock.getTextComponent();
-        addChatMessage(player, "prospector.found", textComponent, entry.getValue());
-      }
+      player.sendStatusMessage(message, true);
     }
     ItemStack stack = player.getHeldItem(hand);
     this.onSuccess(player, stack, hand);
@@ -68,9 +75,6 @@ public class ItemProspector extends Item {
     if (this.cooldown > 0) {
       p.getCooldownTracker().setCooldown(s.getItem(), this.cooldown);
     }
-  }
-  private static void addChatMessage(EntityPlayer player, String text, Object... args) {
-    player.sendMessage(new TextComponentTranslation(text, args));
   }
   private boolean isBlockShowable(IBlockState state) {
     String simpleName = state.getBlock().getRegistryName().toString();
