@@ -88,10 +88,8 @@ public class Prospectors {
     // http://www.minecraftforge.net/forum/index.php?topic=27684.0
     // http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/modification-development/2272349-lessons-from-my-first-mc-1-8-mod
     //    ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
-    String name;
     for (Item item : items) {
-      name = MODID + ":" + item.getUnlocalizedName().replaceAll("item.", "");
-      ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(name, "inventory"));
+      ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(item.getRegistryName(), "inventory"));
     }
   }
   @SubscribeEvent
@@ -108,9 +106,9 @@ public class Prospectors {
     med.syncConfig(config,
         new String[] { "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore" });
     high.syncConfig(config,
-        new String[] { "minecraft:quartz_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore/0", "minecraft:redstone_ore/1" });
+        new String[] { "minecraft:quartz_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore", "minecraft:lit_redstone_ore" });
     best.syncConfig(config,
-        new String[] { "minecraft:quartz_ore", "minecraft:diamond_ore", "minecraft:emerald_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore/0", "minecraft:redstone_ore/1" });
+        new String[] { "minecraft:quartz_ore", "minecraft:diamond_ore", "minecraft:emerald_ore", "minecraft:iron_ore", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:coal_ore", "minecraft:lapis_ore", "minecraft:redstone_ore", "minecraft:lit_redstone_ore" });
     if (config.hasChanged())
       config.save();
   }

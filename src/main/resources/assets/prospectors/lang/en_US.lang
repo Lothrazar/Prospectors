@@ -1,6 +1,7 @@
 itemGroup.prospectors=Prospectors
-prospector.none=Nothing of interest up to 
-prospector.found=Found: 
+prospector.none=Nothing of interest up to %s
+prospector.found=Found: %s %s
+prospector.found.and=, %s %s
 
 
 item.prospector_lowest.name=Weak Dowsing Rod

@@ -1,9 +1,6 @@
 package com.lothrazar.prospectors;
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.Nonnull;
+import java.util.*;
 import com.lothrazar.prospectors.Prospectors.Types;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -16,8 +13,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.oredict.ShapedOreRecipe;
@@ -26,7 +23,7 @@ public class ItemProspector extends Item {
   public int cooldown;
   public int range;
   public boolean isBlacklist;
-  public String[] blocklist;
+  private Set<String> blockSet;
   public Types type;
   public ItemProspector(Types t) {
     super();
@@ -35,41 +32,42 @@ public class ItemProspector extends Item {
   }
   @Override
   public EnumActionResult onItemUse(EntityPlayer player, World worldObj, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-    ItemStack stack = player.getHeldItem(hand);
-    if (side == null || pos == null) { return super.onItemUse(player, worldObj, pos, hand, side, hitX, hitY, hitZ); }
-    Map<String, Integer> mapList = new HashMap<String, Integer>();
-    String name;
-    EnumFacing direction = side.getOpposite();
-    BlockPos current;
-    IBlockState at;
-    Block blockAt;
-    ItemStack s;
-    for (int i = 0; i < range; i++) {
-      current = pos.offset(direction, i);
-      at = worldObj.getBlockState(current);
-      if (at == null || at == Blocks.AIR || at.getBlock() == null) {
-        continue;
-      }
-      blockAt = at.getBlock();
-      s = new ItemStack(Item.getItemFromBlock(blockAt), 1, blockAt.getMetaFromState(at));
-      if (isBlockShowable(s) == false) {
-        continue;
-      }
-      name = s.getDisplayName();
-      int previous = (mapList.containsKey(name)) ? mapList.get(name) : 0;
-      mapList.put(name, previous + 1);
-    }
-    //now send messages
     if (worldObj.isRemote) {
+      Map<IBlockState, Integer> mapList = new HashMap<>();
+      Map<IBlockState, BlockPos> lastPositions = new HashMap<>();
+      EnumFacing direction = side.getOpposite();
+      for (int i = 0; i < range; i++) {
+        BlockPos offsetPos = pos.offset(direction, i);
+        IBlockState state = worldObj.getBlockState(offsetPos);
+        if (state == Blocks.AIR.getDefaultState() || !isBlockShowable(state)) {
+          continue;
+        }
+        int previous = mapList.getOrDefault(state, 0);
+        mapList.put(state, previous + 1);
+        lastPositions.put(state, offsetPos);
+      }
+      //now send messages
+      ITextComponent message = null;
       if (mapList.size() == 0) {
-        addChatMessage(player, lang("prospector.none") + range);
+        message = new TextComponentTranslation("prospector.none", range);
+      } else {
+        for (Map.Entry<IBlockState, Integer> entry : mapList.entrySet()) {
+          IBlockState state = entry.getKey();
+          BlockPos lastPosition = lastPositions.get(state);
+          ItemStack pickBlock = state.getBlock().getPickBlock(state, null, worldObj, lastPosition, player);
+          ITextComponent blockName = pickBlock.getTextComponent();
+          if (message == null) {
+            message = new TextComponentTranslation("prospector.found", entry.getValue(), blockName);
+          } else {
+            message.appendSibling(new TextComponentTranslation("prospector.found.and", entry.getValue(), blockName));
+          }
+        }
       }
-      for (Map.Entry<String, Integer> entry : mapList.entrySet()) {
-        addChatMessage(player, lang("prospector.found") + entry.getKey() + " " + entry.getValue());
-      }
+      player.sendStatusMessage(message, true);
     }
+    ItemStack stack = player.getHeldItem(hand);
     this.onSuccess(player, stack, hand);
-    return super.onItemUse(player, worldObj, pos, hand, side, hitX, hitY, hitZ);
+    return EnumActionResult.SUCCESS;
   }
   private void onSuccess(EntityPlayer p, ItemStack s, EnumHand hand) {
     s.damageItem(1, p);
@@ -78,41 +76,10 @@ public class ItemProspector extends Item {
       p.getCooldownTracker().setCooldown(s.getItem(), this.cooldown);
     }
   }
-  private static String lang(String string) {
-    //if we use the clientside one, it literally does not work & crashes on serverside run
-    return I18n.translateToLocal(string);
-  }
-  private static void addChatMessage(EntityPlayer player, String text) {
-    player.sendMessage(new TextComponentTranslation(lang(text)));
-  }
-  private boolean isBlockShowable(ItemStack stack) {
-    if (stack == null || stack.getItem() == null) { return false; } //nulls
-    String itemName = getStringForItemStack(stack);//this one includes metadata
-    String itemSimpleName = getStringForItem(stack.getItem());//this one doesnt
-    boolean isInList = false;
-    for (String s : blocklist) {//dont use .contains on the list. must use .equals on string
-      if (s == null) {
-        continue;
-      } //lol
-      //so if list has only "minecraft:stone" then all metadata is covered
-      //otherwise, list might have "minecraft:stone/3" so it only matches that
-      if (s.equals(itemName) || s.equals(itemSimpleName)) {
-        isInList = true;
-        break;
-      }
-    }
-    //if its a blacklist, and its IN the list, DONT show it (false)
-    //otherwise, its a whitelist, so if it IS in the list then show it (true)v
-    boolean yesShowIt = (this.isBlacklist) ? (!isInList) : isInList;
-    return yesShowIt;
-  }
-  private static @Nonnull String getStringForItemStack(ItemStack itemStack) {
-    Item item = itemStack.getItem();
-    return item.getRegistryName().getResourceDomain() + ":" + item.getRegistryName().getResourcePath() + "/" + itemStack.getMetadata();
-  }
-  private static String getStringForItem(Item item) {
-    if (item == null || item.getRegistryName() == null) { return ""; }
-    return item.getRegistryName().getResourceDomain() + ":" + item.getRegistryName().getResourcePath();
+  private boolean isBlockShowable(IBlockState state) {
+    String simpleName = state.getBlock().getRegistryName().toString();
+    String nameWithMeta = simpleName + "/" + state.getBlock().getMetaFromState(state);
+    return isBlacklist ^ (blockSet.contains(simpleName) || blockSet.contains(nameWithMeta));
   }
   public void syncConfig(Configuration c, String[] deflist) {
     String category = "prospector_" + this.type.name().toLowerCase();
@@ -120,7 +87,8 @@ public class ItemProspector extends Item {
     this.cooldown = c.getInt("cooldown", category, 10, 0, 256, "Time delay per use (ticks); zero to disable");
     this.setMaxDamage(c.getInt("durability", category, 200, 1, 65536, "Durability: number of uses"));
     this.isBlacklist = c.getBoolean("IsBlacklist", category, false, "True means this is a blacklist: ignore whats listed. False means its a whitelist: only print whats listed.");
-    this.blocklist = c.getStringList("ProspectorBlockList", category, deflist, "List of blocks that the Prospector knows about.");
+    String[] blockList = c.getStringList("ProspectorBlockList", category, deflist, "List of blocks that the Prospector knows about.");
+    this.blockSet = new HashSet<>(Arrays.asList(blockList));
   }
   public IRecipe addRecipe(ResourceLocation rl) {
     IRecipe recipe = null;
